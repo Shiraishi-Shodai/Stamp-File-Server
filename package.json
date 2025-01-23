@@ -1,0 +1,24 @@
+{
+  "name": "stamp-file-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shiraishi-Shodai/Stamp-File-Server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shiraishi-Shodai/Stamp-File-Server/issues"
+  },
+  "homepage": "https://github.com/Shiraishi-Shodai/Stamp-File-Server#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "https": "^1.0.0"
+  }
+}
