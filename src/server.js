@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
 });
 
 // 送信された画像を保存
-app.post("/input_stamp", (req, res) => {
+app.post("/inputStamp", (req, res) => {
   try {
     const { user_id, stamp_id, imgBase64 } = req.body;
     // 必要なパラメータが正しく渡されているか確認
@@ -63,22 +63,40 @@ app.post("/listMyStamp", (req, res) => {
     const targetDir = path.join(__dirname, `../stamps/${user_id}`);
 
     // 非同期でファイルを取得
-    fs.readdir(targetDir, (err, files) => {
-      if (err) {
-        console.error("ディレクトリ読み込みエラー:", err);
-        return res.status(500).json({ error: "ディレクトリ読み込みエラー" });
+    // targetDir配下のディレクトリやファイルを取得
+    const entries = fs.readdirSync(targetDir, {
+      withFileTypes: true,
+      recursive: true,
+    });
+
+    // 画像データを格納する配列
+    const imgBase64List = [];
+    // 各エントリを処理
+    entries.forEach((entry) => {
+      if (entry.isFile()) {
+        const fullPath = path.join(entry.parentPath, entry.name);
+        console.log(fullPath);
+        // スタンプid(ファイル名から拡張子を除く)
+        const stamp_id = entry.name.split(".").slice(0, -1).join(".");
+
+        // ファイルをバイナリデータとして読み込み
+        const fileBuffer = fs.readFileSync(fullPath);
+
+        // バイナリデータをBase64エンコーディングに変換
+        const imgBase64 = fileBuffer.toString("base64");
+
+        // ファイル名とBase64をリストに追加
+        imgBase64List.push({
+          stamp_id: stamp_id,
+          imgBase64: imgBase64,
+        });
       }
+    });
 
-      // 画像データを格納する配列
-      const imgBase64List = [];
-      files.forEach((file) => {
-        // バイナリー化したデータをbase64に変換
-        const imgBase64 = Buffer.from(file).toString("base64");
-        imgBase64List.push({ file: file, imgBase64: imgBase64 });
-      });
-
-      // ファイルの一覧をレスポンスで返す
-      res.status(200).json({ imgBase64List });
+    // ファイルの一覧をレスポンスで返す
+    res.status(200).json({
+      message: "画像送信が完了しました",
+      imgBase64List: imgBase64List,
     });
   } catch (e) {
     console.error("エラーが発生しました:", e);
@@ -104,15 +122,29 @@ app.get("/listAllStamp", (req, res) => {
     // 各エントリを処理
     entries.forEach((entry) => {
       if (entry.isFile()) {
-        const imgBase64 = Buffer.from(file).toString("base64");
+        const fullPath = path.join(entry.parentPath, entry.name);
 
-        const fullPath = path.join(targetDir, entry.name);
-        // ファイルなら、リストに追加
-        imgBase64List.push(fullPath);
+        // スタンプid(ファイル名から拡張子を除く)
+        const stamp_id = entry.name.split(".").slice(0, -1).join(".");
+
+        // ファイルをバイナリデータとして読み込み
+        const fileBuffer = fs.readFileSync(fullPath);
+
+        // バイナリデータをBase64エンコーディングに変換
+        const imgBase64 = fileBuffer.toString("base64");
+
+        // ファイル名とBase64をリストに追加
+        imgBase64List.push({
+          stamp_id: stamp_id,
+          imgBase64: imgBase64,
+        });
       }
     });
 
-    res.status(200).json({ imgBase64List });
+    res.status(200).json({
+      message: "画像送信が完了しました",
+      imgBase64List: imgBase64List,
+    });
   } catch (e) {
     console.error("エラーが発生しました:", e);
     if (next) {
