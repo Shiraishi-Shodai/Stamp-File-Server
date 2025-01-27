@@ -15,6 +15,7 @@ app.get("/", (req, res) => {
 app.post("/inputStamp", (req, res) => {
   try {
     const { user_id, stamp_id, imgBase64 } = req.body;
+    console.log(user_id, stamp_id, imgBase64);
     // 必要なパラメータが正しく渡されているか確認
     if (!user_id || !stamp_id || !imgBase64) {
       return res.status(400).json({ error: "Missing required parameters" });
@@ -138,6 +139,7 @@ app.get("/listAllStamp", (req, res) => {
           stamp_id: stamp_id,
           imgBase64: imgBase64,
         });
+        console.log(imgBase64List);
       }
     });
 
@@ -145,6 +147,31 @@ app.get("/listAllStamp", (req, res) => {
       message: "画像送信が完了しました",
       imgBase64List: imgBase64List,
     });
+  } catch (e) {
+    console.error("エラーが発生しました:", e);
+    if (next) {
+      next(e); // エラーハンドラが定義されている場合に制御を渡す
+    } else {
+      res.status(500).json({ error: "サーバーエラー" });
+    }
+  }
+});
+
+// 特定の画像を削除(スタンプidをクエリで取得)
+app.delete("/deleteStamp/:user_id/:stamp_id", (req, res, next) => {
+  try {
+    const user_id = req.params.user_id;
+    const stamp_id = req.params.stamp_id;
+    const imgPath = path.join(
+      __dirname,
+      `../stamps/${user_id}/${stamp_id}.png`
+    );
+
+    if (!fs.existsSync(imgPath)) {
+      res.status(200).json({ message: "ファイルが見つかりませんでした" });
+    }
+    fs.unlinkSync(imgPath);
+    res.status(200).json({ message: "スタンプを削除しました" });
   } catch (e) {
     console.error("エラーが発生しました:", e);
     if (next) {
